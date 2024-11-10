@@ -1,5 +1,11 @@
-Data from Discover and Chase Credit Cards
+SQL - Credit Card Transaction History
 
+
+This is an exploratory analysis on my spending habits through the month of October. By using SQL, I can pull insights from the data to provide 
+guidance as to how I can budget more efficiently.
+
+(Note: The engine I used was SQLite. Because I am on a Mac, finding an engine that was compatible  was quite the struggle. But this one worked out 
+just fine and I was able to utilize my Mac’s terminal to explore the data.)
 
 
 # Import files into SQLite
@@ -59,12 +65,15 @@ WHERE Category IN ('Restaurants', 'Supermarkets', 'Food & Drink', 'Shopping')
   AND trans_date <= '10/31/2024'
 ORDER BY trans_date DESC;
 
-Note: I didn't want to keep having to include Costco with that complicated query for anything food related so I altered the category from Shopping to Supermarkets 
+Note: I didn't want to keep having to include Costco with that complicated query for anything food related so I 
+        altered the category from Shopping to Supermarkets 
 
 UPDATE trans
 SET Category = 'Supermarkets'
 WHERE Category = 'Shopping'
   AND Description LIKE '%COSTCO%';
+
+
 
 
 2. Find the total amount spent on food
@@ -115,7 +124,8 @@ trans_date                      description                     amount
 
 
 
-5. List the total amount spent at the cafeteria in Amazon's office using the string '365' (This is how much I spend on snakcks during work. Shows the cost of being lazy since I didn't want to pack a lunch)
+5. List the total amount spent at the cafeteria in Amazon's office using the string '365' (This is how much I spend on snakcks during work. 
+    Shows the cost of being lazy since I didn't want to pack a lunch)
 
 SELECT SUM(amount) as total_amount 
 FROM trans
@@ -125,7 +135,6 @@ AND trans_date >= '10/01/2024'  AND trans_date <= '10/31/2024';
 total_amount                  
 ------------------------------
 42.33                         
-
 
 
 
