@@ -1,0 +1,182 @@
+Data from Discover and Chase Credit Cards
+
+
+
+# Import files into SQLite
+.mode csv
+.import /Users/jp/Desktop/DFS-Search-20241104.csv trans1
+.import /Users/jp/Desktop/ChaseCreditPayments.csv trans2
+
+
+
+All queries will in the month of October. If output is less than 5 lines of code, it will be included. Otherwise, just the queries will be shown. 
+
+# Creating the tables to combine both datasets
+CREATE TABLE combined_trans (
+    trans_date TEXT,
+    post_date TEXT,
+    description TEXT,
+    amount REAL,
+    category TEXT
+);
+
+# Create first table with Discover Credit Card Transaction History and insert into combined dataset
+INSERT INTO combined_trans (trans_date, post_date, description, amount, category)
+SELECT "Trans. Date", "Post Date", "Description", "Amount", "Category" 
+FROM trans1;
+
+
+# Create second table with Chase Credit Card Transaction History and insert into combined dataset
+INSERT INTO combined_trans (trans_date, post_date, description, amount, category)
+SELECT "Transaction Date", "Post Date", "Description", "Amount", "Category"
+FROM trans2;
+
+
+# Rename combined dataset to type faster queries
+ALTER TABLE combined_trans RENAME TO trans;
+
+
+# Adjust format of table
+.mode column 
+.width 30 30 30 30 
+.headers off or on
+
+
+
+1. Select the transactions involving food only (Note: Costco falls under the 'Shopping' category)
+
+SELECT trans_date, 
+       SUBSTR(Description, 1, 30) AS Description, 
+       Amount, 
+       Category
+FROM trans
+WHERE Category IN ('Restaurants', 'Supermarkets', 'Food & Drink', 'Shopping')
+  AND (
+    (Category = 'Shopping' AND description LIKE '%COSTCO%') 
+    OR (Category != 'Shopping')
+  )
+  AND trans_date >= '10/01/2024' 
+  AND trans_date <= '10/31/2024'
+ORDER BY trans_date DESC;
+
+Note: I didn't want to keep having to include Costco with that complicated query for anything food related so I altered the category from Shopping to Supermarkets 
+
+UPDATE trans
+SET Category = 'Supermarkets'
+WHERE Category = 'Shopping'
+  AND Description LIKE '%COSTCO%';
+
+
+2. Find the total amount spent on food
+
+SELECT SUM(amount) as Total_Food_Spending
+FROM trans
+WHERE Category IN ('Restaurants', 'Supermarkets', 'Food & Drink')
+AND trans_date >= '10/01/2024' 
+AND trans_date <= '10/31/2024';
+
+Total_Food_Spending           
+------------------------------
+726.53                       
+
+
+3. List the total amount spent for each category involving food.
+
+SELECT category, SUM(amount) as amount 
+FROM trans
+WHERE category IN ('Restaurants', 'Supermarkets', 'Food & Drink')
+AND trans_date >= '10/01/2024'
+AND trans_date <= '10/31/2024'
+GROUP BY category;
+
+category                        amount                        
+------------------------------  ------------------------------
+Food & Drink                    150.86                        
+Restaurants                     244.31                        
+Supermarkets                    331.36           
+
+
+
+4. List the transactions at Mcdonalds including the date, description, and amount spent
+
+SELECT trans_date, SUBSTR(description, 1, 30) as description, amount
+FROM trans
+WHERE description LIKE '%MCDONALD%'
+AND trans_date >= '10/01/2024'  AND trans_date <= '10/31/2024';
+
+trans_date                      description                     amount                        
+------------------------------  ------------------------------  ------------------------------
+10/02/2024                      MCDONALD'S F18544 TEMPE AZ      9.61                          
+10/05/2024                      MCDONALD'S F ADLO TEMPE AZ      9.72                          
+10/06/2024                      MCDONALD'S F25112 GLENDALE AZA  14.88                         
+10/24/2024                      MCDONALD'S F ADLO TEMPE AZ      10.81                         
+10/25/2024                      MCDONALD'S F ADLO               1.39    
+
+
+
+
+5. List the total amount spent at the cafeteria in Amazon's office using the string '365' (This is how much I spend on snakcks during work. Shows the cost of being lazy since I didn't want to pack a lunch)
+
+SELECT SUM(amount) as total_amount 
+FROM trans
+WHERE description LIKE '%365%' 
+AND trans_date >= '10/01/2024'  AND trans_date <= '10/31/2024';
+
+total_amount                  
+------------------------------
+42.33                         
+
+
+
+
+
+6. List the transactions when Gas was purchased including the date, category, and amount spent
+
+SELECT trans_date, category, amount 
+FROM trans
+WHERE category IN ('Gas', 'Gasoline')
+AND trans_date >= '10/01/2024'  AND trans_date <= '10/31/2024';
+
+trans_date            category              amount              
+--------------------  --------------------  --------------------
+10/05/2024            Gasoline              41.94               
+10/27/2024            Gasoline              5.79                
+10/29/2024            Gas                   26.96               
+10/27/2024            Gas                   19.1                
+10/17/2024            Gas                   35.8     
+
+Note: Decided to just combine the categories Gas and Gasoline to make queries easier 
+
+UPDATE trans
+SET Category = 'Gas'
+WHERE Category = 'Gasoline'
+  
+
+
+
+
+7. Analyze how much is spent in each category during October 2024
+
+SELECT Category, SUM(Amount) AS Total_Spent
+FROM trans
+WHERE trans_date >= '10/01/2024' AND trans_date <= '10/31/2024'
+GROUP BY Category
+ORDER BY Total_Spent DESC;
+
+
+
+8. Identify any purchases that were over $50.
+
+SELECT trans_date, Description, Amount
+FROM trans
+WHERE trans_date >= '10/01/2024' AND trans_date <= '10/31/2024'
+AND Amount > 50;
+
+
+
+The End
+
+This was just a basic overview of my spending habits for the month of Oct. 2024. 
+I mainly wanted to practice my SQL skills but still thought it'd be interesting to see how I was spending my monthly income. 
+Next, I will be doing a more in-depth look of my spending habits across a longer timeframe. 
+
