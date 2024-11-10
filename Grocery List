@@ -21,7 +21,7 @@ SELECT * FROM store
 ORDER BY price desc;
 
 --What is the avg price of items in the dairy section?
-SELECT AVG(price) "avg dairy item price"
+SELECT AVG(price) as "avg dairy item price"
 FROM store
 WHERE aisle='Dairy';
 
